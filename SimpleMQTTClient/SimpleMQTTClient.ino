@@ -23,7 +23,7 @@ bool led_state = 0;
 
 
 // LED Pin
-const int ledPin = 13;
+const int ledPin = 2;
 
 void setup() {
   Serial.begin(115200);
@@ -75,7 +75,7 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print("Received message:");
     Serial.print(messageTemp);    
     if(messageTemp == "TOGGLE"){
-      led_state = ~led_state;
+      led_state = !led_state;
     }
   }
 }
@@ -103,7 +103,7 @@ void loop() {
     reconnect();
   }
   client.loop();
-    delay(1000);
+    delay(1);
     if(led_state){
       client.publish("/led_state", "ON");
     }else{
