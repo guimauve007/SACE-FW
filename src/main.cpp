@@ -7,33 +7,23 @@
 #include <PubSubClient.h>
 
 // Replace the next variables with your SSID/Password combination
-const char* ssid = "EBOX-e88e";
-const char* password = "9c469d1b98";
+const char* ssid = "SACE-2.4GHz";
+const char* password = "Admin123";
 
 // Add your MQTT Broker IP address, example:
 //const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "192.168.1.8";
+const char* mqtt_server = "192.168.10.101";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
 char msg[50];
 int value = 0;
-bool led_state = 0;
+bool spindleFanState = 0;
 
 
-// LED Pin
-const int ledPin = 2;
-
-void setup() {
-  Serial.begin(115200);
-
-  setup_wifi();
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-
-  pinMode(ledPin, OUTPUT);
-}
+// Accessoires
+const int SpindleFanPin = 2;
 
 void setup_wifi() {
   delay(10);
@@ -55,6 +45,7 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
@@ -71,13 +62,23 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
   // Changes the output state according to the message
-  if (String(topic) == "/led_ctl") {
+  if (String(topic) == "ctl/spindleFanButton") {
     Serial.print("Received message:");
     Serial.print(messageTemp);    
     if(messageTemp == "TOGGLE"){
-      led_state = !led_state;
+      spindleFanState = !spindleFanState;
     }
   }
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+
+  pinMode(SpindleFanPin, OUTPUT);
 }
 
 void reconnect() {
@@ -88,7 +89,7 @@ void reconnect() {
     if (client.connect("ESP8266Client")) {
       Serial.println("connected");
       // Subscribe
-      client.subscribe("/led_ctl");
+      client.subscribe("ctl/spindleFanButton");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -104,12 +105,12 @@ void loop() {
   }
   client.loop();
     delay(1);
-    if(led_state){
-      client.publish("/led_state", "ON");
+    if(spindleFanState){
+      client.publish("/state/spindleFan", "ON");
     }else{
-      client.publish("/led_state", "OFF");
+      client.publish("/state/spindleFan", "OFF");
     }
-    Serial.println(led_state);
-    digitalWrite(ledPin, led_state);
+    Serial.println(spindleFanState);
+    digitalWrite(SpindleFanPin, spindleFanState);
 
 }
