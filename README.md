@@ -16,9 +16,6 @@ git clone --recursive https://github.com/guimauve007/SACE-FW.git
 	- PlatformIO IDE
 	- 
 
-- Installer le driver USB pour esp32 (CP210 de silicon labs)
+- Installer le driver USB pour esp32 au besoin (CP210 de silicon labs)
 
 
-## Dependencies
-<WiFi.h> 
-<PubSubClient.h>
