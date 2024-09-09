@@ -1,18 +1,16 @@
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com  
-*********/
-
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <Wire.h>
+#include <Adafruit_MCP4728.h>
+
+Adafruit_MCP4728 mcp;
 
 // Replace the next variables with your SSID/Password combination
 const char* ssid = "SACE-2.4GHz";
 const char* password = "Admin123";
 
-// Add your MQTT Broker IP address, example:
-//const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "192.168.10.101";
+// MQTT Broker IP address:
+const char* mqtt_server = "192.168.10.129";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -23,11 +21,12 @@ bool spindleFanState = 0;
 
 
 // Accessoires
-const int SpindleFanPin = 2;
+const int SpindleFanPin = 16;
+
 
 void setup_wifi() {
   delay(10);
-  // We start by connecting to a WiFi network
+  // On se connecte au réseau WiFi
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -57,11 +56,7 @@ void callback(char* topic, byte* message, unsigned int length) {
     messageTemp += (char)message[i];
   }
 
-
-  // Feel free to add more if statements to control more GPIOs with MQTT
-
-  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
-  // Changes the output state according to the message
+  //filtrage des messages
   if (String(topic) == "ctl/spindleFanButton") {
     Serial.print("Received message:");
     Serial.print(messageTemp);    
@@ -73,7 +68,8 @@ void callback(char* topic, byte* message, unsigned int length) {
 
 void setup() {
   Serial.begin(9600);
-
+  Wire.begin();
+   
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -100,6 +96,7 @@ void reconnect() {
   }
 }
 void loop() {
+  
   if (!client.connected()) {
     reconnect();
   }
@@ -112,5 +109,5 @@ void loop() {
     }
     Serial.println(spindleFanState);
     digitalWrite(SpindleFanPin, spindleFanState);
-
+  
 }
